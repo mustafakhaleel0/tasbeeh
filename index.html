@@ -27,7 +27,6 @@
   .saved-item:hover { background-color: #e2ebe6; }
   .badge-sage { background-color: #8aa899; color: white; font-size: 0.9rem; padding: 5px 10px; border-radius: 8px; }
 
-  /* Active highlight */
   .counter-card { transition: box-shadow 0.3s, border-color 0.3s; }
   .counter-card.active { border: 3px solid #6f8f7d; box-shadow: 0 0 15px rgba(111,143,125,0.6); }
 
@@ -39,19 +38,29 @@
   body.dark .saved-item { background: #3e4a44; border-color: #6f8f7d; }
   body.dark .saved-item:hover { background-color: #4a5d52; }
 
-  @media (max-width: 576px) { .count-btn { width: 90px; height: 90px; font-size: 1.5rem; } }
+  @media (max-width: 576px) {
+    .count-btn { width: 90px; height: 90px; font-size: 1.5rem; }
+    h1 { font-size: 1.5rem; }
+  }
 </style>
 </head>
 <body class="py-5">
 <div class="container">
+  <!-- Header with Responsive Menu -->
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>Tasbeeh</h1>
-    <div>
-      <button class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#savedCountersModal">💾 Saved Counters</button>
-      <button id="theme-toggle" class="btn btn-outline-success">🌙 Dark Mode</button>
+    <h1 class="fs-4">Tasbeeh</h1>
+    <div class="dropdown">
+      <button class="btn btn-outline-success dropdown-toggle" type="button" id="topMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
+        ☰ Menu
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="topMenuBtn">
+        <li><button class="dropdown-item py-2" data-bs-toggle="modal" data-bs-target="#savedCountersModal">💾 Saved Counters</button></li>
+        <li><button class="dropdown-item py-2" id="theme-toggle">🌙 Dark Mode</button></li>
+      </ul>
     </div>
   </div>
 
+  <!-- Add Counter Card -->
   <div class="card shadow-lg p-4 mb-4">
     <div class="row g-2 mb-4">
       <div class="col-md-5">
@@ -132,7 +141,7 @@
 </div>
 
 <script>
-let counters = [], activeIndex = null, editIndex = null, deleteIndex = null;
+let counters=[], activeIndex=null, editIndex=null, deleteIndex=null;
 
 function loadCounters(){
   const saved = localStorage.getItem("counters");
@@ -175,7 +184,6 @@ function renderActive(){
   `;
   container.appendChild(counterCard);
   counterCard.focus();
-  
 }
 
 function incrementCounter(index){
@@ -194,25 +202,17 @@ function deleteCounter(index){
 }
 
 document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
-  if (deleteIndex !== null) {
-    counters.splice(deleteIndex, 1);
-
-    // Adjust activeIndex
-    if (activeIndex === deleteIndex) {
-      activeIndex = null; // deleted counter was active
-    } else if (activeIndex > deleteIndex) {
-      activeIndex--; // shift active index down if after deleted
-    }
-
-    renderActive();
-    saveCounters();
-    deleteIndex = null;
+  if(deleteIndex!==null){
+    counters.splice(deleteIndex,1);
+    if(activeIndex===deleteIndex) activeIndex=null;
+    else if(activeIndex>deleteIndex) activeIndex--;
+    renderActive(); saveCounters();
+    deleteIndex=null;
   }
-  const modalEl = document.getElementById("deleteConfirmModal");
-  const modal = bootstrap.Modal.getInstance(modalEl);
+  const modalEl=document.getElementById("deleteConfirmModal");
+  const modal=bootstrap.Modal.getInstance(modalEl);
   modal.hide();
 });
-
 
 function editCounter(index){
   editIndex=index;
@@ -227,8 +227,7 @@ document.getElementById("saveEditBtn").addEventListener("click",()=>{
   const newName=document.getElementById("editName").value.trim();
   let newGoal=parseInt(document.getElementById("editGoal").value);
   if(newName!=="") counters[editIndex].name=newName;
-  if(!isNaN(newGoal)&&newGoal>0) counters[editIndex].goal=newGoal;
-  else counters[editIndex].goal=0;
+  counters[editIndex].goal=!isNaN(newGoal)&&newGoal>0?newGoal:0;
   renderActive(); saveCounters();
   const modalEl=document.getElementById("editCounterModal");
   const modal=bootstrap.Modal.getInstance(modalEl);
@@ -254,11 +253,10 @@ document.getElementById("add-btn").addEventListener("click",addCounter);
 
 document.addEventListener("keydown",(e)=>{
   const activeEl=document.activeElement;
-  const isTyping=activeEl.tagName==="INPUT" || activeEl.tagName==="TEXTAREA";
-
-  if(e.key==="ArrowUp" && !isTyping){ e.preventDefault(); if(activeIndex!==null) incrementCounter(activeIndex); }
-  if(e.key==="ArrowDown" && !isTyping){ e.preventDefault(); if(activeIndex!==null) decrementCounter(activeIndex); }
-  if(e.key==="Enter"){ e.preventDefault(); if(activeEl.id==="name"||activeEl.id==="goal") addCounter(); }
+  const isTyping=activeEl.tagName==="INPUT"||activeEl.tagName==="TEXTAREA";
+  if(e.key==="ArrowUp"&&!isTyping){ e.preventDefault(); if(activeIndex!==null) incrementCounter(activeIndex); }
+  if(e.key==="ArrowDown"&&!isTyping){ e.preventDefault(); if(activeIndex!==null) decrementCounter(activeIndex); }
+  if(e.key==="Enter"){ if(activeEl.id==="name"||activeEl.id==="goal"){ e.preventDefault(); addCounter(); } }
 });
 
 document.getElementById("searchCounter").addEventListener("input",(e)=>{
